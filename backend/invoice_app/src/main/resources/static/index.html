@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Invoice Generator • Dealers Auto Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root{
+          --bg: #0b1020;
+          --card: #10152b;
+          --muted: #8b93a7;
+          --text: #eaeefb;
+          --primary: #5b8cff;
+          --primary-600:#3a6df5;
+          --success:#20c997;
+          --danger:#ff5f6d;
+          --border: #222a47;
+          --input: #0e1430;
+          --shadow: 0 6px 24px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.2);
+          --radius: 14px;
+        }
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{
+          margin:0;
+          font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+          background: radial-gradient(1200px 800px at 80% -20%, #1e2350 0%, #0b1020 60%) fixed, var(--bg);
+          color: var(--text);
+          letter-spacing:.1px;
+        }
+        a{color:var(--primary)}
+        .wrap{
+          min-height:100%;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          padding:32px 16px;
+        }
+        .shell{
+          width:100%;
+          max-width: 980px;
+          display:grid;
+          grid-template-columns: 1.1fr .9fr;
+          gap:24px;
+        }
+        @media (max-width: 920px){
+          .shell{grid-template-columns: 1fr}
+        }
+        .card{
+          background: linear-gradient(180deg, rgba(255,255,255,.02), transparent 60%) , var(--card);
+          border:1px solid var(--border);
+          border-radius: var(--radius);
+          box-shadow: var(--shadow);
+          overflow:hidden;
+        }
+        .header{
+          padding:22px 24px;
+          border-bottom:1px solid var(--border);
+          display:flex; align-items:center; gap:12px;
+          background: linear-gradient(180deg, rgba(91,140,255,.06), transparent);
+        }
+        .badge{
+          display:inline-flex; align-items:center; justify-content:center;
+          width:34px; height:34px; border-radius:9px;
+          background: linear-gradient(135deg, #6ea0ff 0%, #3a6df5 100%);
+          color:white; font-weight:700;
+          box-shadow: 0 8px 20px rgba(91,140,255,.35);
+        }
+        .title{
+          font-size:18px; font-weight:700; letter-spacing:.3px;
+        }
+        .muted{ color: var(--muted); font-size:13px }
+        .body{ padding:20px 24px 22px }
+        .row{ display:flex; gap:14px }
+        .row > .col{ flex:1 }
+        .field{ margin:12px 0 0 }
+        .label{
+          display:flex; align-items:center; gap:8px;
+          font-size:13px; color: var(--muted); margin-bottom:6px;
+          letter-spacing:.2px;
+        }
+        .input{
+          width:100%; padding:12px 13px; border-radius:10px;
+          border:1px solid var(--border); background: var(--input);
+          color: var(--text); outline:none; font-size:15px;
+          transition: border-color .18s ease, box-shadow .18s ease;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+        }
+        .input::placeholder{ color:#8891a7 }
+        .input:focus{ border-color: var(--primary); box-shadow: 0 0 0 3px rgba(91,140,255,.2) }
+        .help{
+          margin-top:6px; color: var(--muted); font-size:12px;
+        }
+        .actions{ margin-top:18px; display:flex; align-items:center; gap:10px; flex-wrap:wrap }
+        .btn{
+          appearance:none; border:0; outline:0; cursor:pointer;
+          padding:12px 16px; border-radius:10px; font-weight:700;
+          letter-spacing:.3px; color:white; background:var(--primary);
+          box-shadow: 0 8px 20px rgba(91,140,255,.3);
+          transition: transform .08s ease, filter .2s ease, background .2s ease;
+        }
+        .btn:hover{ filter: brightness(1.04) }
+        .btn:active{ transform: translateY(1px) }
+        .btn[disabled]{ filter: grayscale(.2) brightness(.8); cursor:not-allowed }
+        .btn.secondary{
+          background: transparent; color: var(--text);
+          border:1px solid var(--border);
+        }
+        .status{
+          margin-top:12px; font-size:14px; line-height:1.35;
+          padding:12px 12px; border-radius:10px; border:1px solid var(--border);
+          display:none;
+        }
+        .status.show{ display:block }
+        .status.ok{ background: rgba(32,201,151,.08); border-color: rgba(32,201,151,.4); color:#aef7df }
+        .status.err{ background: rgba(255,95,109,.08); border-color: rgba(255,95,109,.45); color:#ffc6cb }
+        .status.warn{ background: rgba(255,184,34,.1); border-color: rgba(255,184,34,.35); color:#ffe2ae }
+        .grid-note{
+          background:transparent; border:1px dashed var(--border); border-radius: var(--radius);
+          padding:18px 18px;
+        }
+        .points{ margin:10px 0 0; padding:0 0 0 18px; color: var(--muted) }
+        .points li{ margin:6px 0 }
+        .hero{
+          position:relative; overflow:hidden; min-height:100%;
+          background:
+            radial-gradient(400px 200px at 90% 0%, rgba(91,140,255,.18), transparent 70%),
+            radial-gradient(500px 280px at -10% 110%, rgba(32,201,151,.16), transparent 70%);
+          display:flex; align-items:center;
+        }
+        .hero-inner{ padding:28px; }
+        .hero h1{
+          margin:0 0 10px; font-size:26px; line-height:1.25; letter-spacing:.2px;
+        }
+        .hero p{ margin:0; color:var(--muted) }
+        .pill{
+          display:inline-flex; align-items:center; gap:8px;
+          background: rgba(91,140,255,.12); border:1px solid rgba(91,140,255,.35);
+          color:#bed2ff; padding:6px 10px; border-radius:999px; font-size:12px;
+        }
+        .kbd{ font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background:#0b1130; border:1px solid var(--border); padding:2px 6px; border-radius:6px; }
+        .spinner{
+          width:16px;height:16px;border-radius:50%;
+          border:2px solid rgba(255,255,255,.25);
+          border-top-color:#fff; animation:spin 1s linear infinite; display:inline-block; vertical-align:-2px;
+        }
+        @keyframes spin{to{transform:rotate(360deg)}}
+        footer{
+          margin-top:20px; padding:12px; text-align:center; color:var(--muted); font-size:12px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="shell">
+
+        <!-- Left: Form card -->
+        <div class="card" role="region" aria-label="Invoice Generator">
+            <div class="header">
+                <div class="badge">⎙</div>
+                <div>
+                    <div class="title">PDF Auto‑Fill Invoice</div>
+                    <div class="muted">Generate an invoice with dealer, vehicle, totals, and QR code.</div>
+                </div>
+            </div>
+
+            <div class="body">
+                <div class="row">
+                    <div class="col">
+                        <div class="field">
+                            <label class="label" for="dealer">Dealer ID</label>
+                            <input class="input" id="dealer" placeholder="D001" value="D001" autocomplete="off" />
+                            <div class="help">Try: D001</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="field">
+                            <label class="label" for="vehicle">Vehicle ID</label>
+                            <input class="input" id="vehicle" placeholder="V101" value="V101" autocomplete="off" />
+                            <div class="help">Try: V101 / V102 / V103</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label" for="customer">Customer Name</label>
+                    <input class="input" id="customer" placeholder="John Doe" value="John Doe" autocomplete="name" />
+                </div>
+
+                <div class="actions">
+                    <button id="btn-generate" class="btn" onclick="downloadInvoice()" aria-live="polite">
+                        <span id="btn-text">Generate & Download PDF</span>
+                    </button>
+                    <button class="btn secondary" onclick="fillSample()">Fill Sample</button>
+                </div>
+
+                <div id="status" class="status" role="status" aria-live="polite"></div>
+
+                <div class="grid-note" style="margin-top:16px">
+                    <div class="muted">Notes</div>
+                    <ul class="points">
+                        <li>Tax is auto‑calculated at 10%.</li>
+                        <li>QR code contains the transaction ID.</li>
+                        <li>Use the button or press <span class="kbd">Enter</span> in a field to submit.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <footer>© Dealers Auto Center • Made by Vikrant</footer>
+        </div>
+
+        <!-- Right: Hero / Info -->
+        <aside class="card hero" aria-label="Information">
+            <div class="hero-inner">
+                <div class="pill">Secure • Fast • Portable</div>
+                <h1>Generate professional invoices in seconds</h1>
+                <p>Backed by a robust Spring Boot API with OpenPDF and ZXing. Deployed via Codespaces or Linux VM with Nginx and SSL.</p>
+                <div style="height:18px"></div>
+                <div class="muted" style="font-size:13px">
+                    Tip: This page is served directly by Spring Boot (no extra frontend server).
+                    I will later migrate to React with the same API.
+                </div>
+            </div>
+        </aside>
+
+    </div>
+</div>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(type, text) {
+      const el = $('status');
+      el.className = 'status show ' + (type || '');
+      el.textContent = text || '';
+    }
+    function clearStatus() {
+      const el = $('status');
+      el.className = 'status';
+      el.textContent = '';
+    }
+    function setLoading(loading) {
+      const btn = $('btn-generate');
+      const txt = $('btn-text');
+      btn.disabled = loading;
+      if (loading) {
+        txt.innerHTML = '<span class="spinner"></span> Generating...';
+      } else {
+        txt.textContent = 'Generate & Download PDF';
+      }
+    }
+    function validate({dealerId, vehicleId, customerName}) {
+      if (!dealerId) return 'Dealer ID is required';
+      if (!vehicleId) return 'Vehicle ID is required';
+      if (!customerName) return 'Customer name is required';
+      if (customerName.length > 100) return 'Customer name must be ≤100 characters';
+      return null;
+    }
+    function fillSample() {
+      $('dealer').value = 'D001';
+      $('vehicle').value = 'V101';
+      $('customer').value = 'John Doe';
+      clearStatus();
+    }
+    async function downloadInvoice() {
+      clearStatus();
+      const dealerId = $('dealer').value.trim();
+      const vehicleId = $('vehicle').value.trim();
+      const customerName = $('customer').value.trim();
+
+      const err = validate({dealerId, vehicleId, customerName});
+      if (err) { setStatus('err', err); return; }
+
+      setLoading(true);
+      try {
+        const res = await fetch('/api/v1/invoices/pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/pdf' },
+          body: JSON.stringify({ dealerId, vehicleId, customerName })
+        });
+
+        if (!res.ok) {
+          let detail = '';
+          try { detail = await res.text(); } catch {}
+          setStatus('err', `Error ${res.status}${detail ? ': ' + detail : ''}`);
+          return;
+        }
+
+        // Use filename from Content-Disposition if available
+        const cd = res.headers.get('Content-Disposition') || '';
+        let filename = 'invoice.pdf';
+        const m = cd.match(/filename="([^"]+)"/);
+        if (m && m[1]) filename = m[1];
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        setStatus('ok', `Downloaded ${filename}`);
+      } catch (e) {
+        setStatus('err', `Request failed: ${e.message}`);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Submit on Enter from any input
+    ['dealer','vehicle','customer'].forEach(id=>{
+      $(id).addEventListener('keydown', (e)=>{
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          downloadInvoice();
+        }
+      });
+    });
+</script>
+</body>
+</html>
